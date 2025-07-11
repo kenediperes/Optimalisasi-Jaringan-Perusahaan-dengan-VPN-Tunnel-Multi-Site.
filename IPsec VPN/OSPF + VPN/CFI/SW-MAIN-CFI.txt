@@ -1,0 +1,87 @@
+enable
+configure terminal
+hostname SW-MAIN-CFI
+
+banner motd #
+Designed and Configured by
+411221012 - Kenedi Peres
+#
+
+enable secret nitesane98
+service password-encryption
+username admin secret nitesane98
+ip domain-name cfi.local
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 2
+line console 0
+password nitesane98
+login
+exit
+line vty 0 15
+transport input ssh
+login local
+exit
+
+vlan 65
+name Finance_cfi
+exit
+
+vlan 70
+name Mesin_ctp
+exit
+
+vlan 75
+name Staff_umum
+exit
+
+interface FastEthernet0/1
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+no shutdown
+exit
+
+interface FastEthernet0/2
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+shutdown
+exit
+
+interface Port-channel1
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+exit
+
+interface range FastEthernet0/3-4
+channel-group 1 mode active
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+no shutdown
+exit
+
+interface Port-channel2
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+exit
+
+interface range FastEthernet0/5-6
+channel-group 2 mode active
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+no shutdown
+exit
+
+interface range FastEthernet0/7-24
+shutdown
+exit
+
+interface range GigabitEthernet0/1-2
+shutdown
+exit
+
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1,65,70,75 priority 4096
+
+end
+write memory

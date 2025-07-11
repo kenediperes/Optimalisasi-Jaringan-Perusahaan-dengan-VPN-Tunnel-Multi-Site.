@@ -1,0 +1,50 @@
+enable
+configure terminal
+
+hostname ISP
+
+banner motd #
+Designed and Configured by
+411221012 - Kenedi Peres
+#
+
+enable secret nitesane98
+service password-encryption
+username admin secret nitesane98
+ip domain-name isp.local
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 2
+line console 0
+password nitesane98
+login
+exit
+line vty 0 15
+transport input ssh
+login local
+exit
+
+interface GigabitEthernet0/0
+ip address 203.0.113.1 255.255.255.252
+no shutdown
+exit
+
+interface GigabitEthernet0/1
+ip address 198.51.100.1 255.255.255.252
+no shutdown
+exit
+
+interface GigabitEthernet0/2
+ip address 192.0.2.1 255.255.255.252
+no shutdown
+exit
+
+ip routing
+
+ip route 192.168.0.0 255.255.0.0 203.0.113.2
+ip route 192.168.0.0 255.255.0.0 198.51.100.2
+ip route 192.168.0.0 255.255.0.0 192.0.2.2
+
+end
+write memory

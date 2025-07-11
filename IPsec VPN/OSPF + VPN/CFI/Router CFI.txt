@@ -1,0 +1,143 @@
+enable
+configure terminal
+
+hostname Router-CFI
+
+banner motd #
+Designed and Configured by
+411221012 - Kenedi Peres
+#
+
+enable secret nitesane98
+service password-encryption
+username admin secret nitesane98
+ip domain-name cfi.local
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 2
+line console 0
+password nitesane98
+login
+exit
+line vty 0 15
+transport input ssh
+login local
+exit
+
+access-list 101 permit ip 192.168.70.0 0.0.0.255 192.168.15.0 0.0.0.255
+access-list 101 permit ip 192.168.15.0 0.0.0.255 192.168.70.0 0.0.0.255
+access-list 101 permit ip 192.168.70.0 0.0.0.255 192.168.25.0 0.0.0.255
+access-list 101 permit ip 192.168.25.0 0.0.0.255 192.168.70.0 0.0.0.255
+access-list 101 permit ip 192.168.70.0 0.0.0.255 192.168.100.0 0.0.0.255
+access-list 101 permit ip 192.168.100.0 0.0.0.255 192.168.70.0 0.0.0.255
+access-list 101 deny ip any any
+
+access-list 102 permit ip 192.168.70.0 0.0.0.255 192.168.45.0 0.0.0.255
+access-list 102 permit ip 192.168.45.0 0.0.0.255 192.168.70.0 0.0.0.255
+access-list 102 permit ip 192.168.70.0 0.0.0.255 192.168.50.0 0.0.0.255
+access-list 102 permit ip 192.168.50.0 0.0.0.255 192.168.70.0 0.0.0.255
+access-list 102 permit ip 192.168.70.0 0.0.0.255 192.168.55.0 0.0.0.255
+access-list 102 permit ip 192.168.55.0 0.0.0.255 192.168.70.0 0.0.0.255
+access-list 102 deny ip any any
+
+crypto isakmp policy 10
+encr aes 256
+hash sha
+authentication pre-share
+group 5
+lifetime 86400
+exit
+
+crypto isakmp key CitraNetwork2025 address 172.16.1.1
+crypto isakmp key CitraNetwork2025 address 172.16.1.10
+crypto ipsec transform-set TS_CFI esp-aes 256 esp-sha-hmac
+
+crypto map CM_CFI_CPI 10 ipsec-isakmp
+set peer 172.16.1.1
+set transform-set TS_CFI
+match address 102
+set pfs group5
+exit
+
+crypto map CM_CFI_CMN 20 ipsec-isakmp
+set peer 172.16.1.10
+set transform-set TS_CFI
+match address 101
+set pfs group5
+exit
+
+interface GigabitEthernet0/0
+ip address 192.0.2.2 255.255.255.0
+no shutdown
+exit
+
+interface GigabitEthernet0/1
+ip address 172.16.1.6 255.255.255.252
+crypto map CM_CFI_CPI
+crypto map CM_CFI_CMN
+no shutdown
+exit
+
+interface GigabitEthernet0/2
+shutdown
+exit
+
+interface GigabitEthernet0/1.65
+encapsulation dot1Q 65
+ip address 192.168.65.1 255.255.255.0
+ip access-group 100 in
+no shutdown
+exit
+
+ip dhcp excluded-address 192.168.65.1 192.168.65.10
+ip dhcp pool VLAN65
+network 192.168.65.0 255.255.255.0
+default-router 192.168.65.1
+exit
+
+interface GigabitEthernet0/1.70
+encapsulation dot1Q 70
+ip address 192.168.70.1 255.255.255.0
+no shutdown
+exit
+
+ip dhcp excluded-address 192.168.70.1 192.168.70.10
+ip dhcp pool VLAN70
+network 192.168.70.0 255.255.255.0
+default-router 192.168.70.1
+exit
+
+interface GigabitEthernet0/1.75
+encapsulation dot1Q 75
+ip address 192.168.75.1 255.255.255.0
+ip access-group 100 in
+no shutdown
+exit
+
+ip dhcp excluded-address 192.168.75.1 192.168.75.10
+ip dhcp pool VLAN75
+network 192.168.75.0 255.255.255.0
+default-router 192.168.75.1
+exit
+
+ip route 0.0.0.0 0.0.0.0 192.0.2.1
+
+router ospf 1
+router-id 6.6.6.6
+network 172.16.0.8 0.0.0.3 area 0
+network 192.168.70.0 0.0.0.255 area 0
+exit
+
+access-list 100 permit udp any eq 68 any eq 67
+access-list 100 permit udp any eq 67 any eq 68
+access-list 100 deny ip 192.168.65.0 0.0.0.255 any
+access-list 100 deny ip any 192.168.65.0 0.0.0.255
+access-list 100 deny ip 192.168.75.0 0.0.0.255 any
+access-list 100 deny ip any 192.168.75.0 0.0.0.255
+access-list 100 deny ip 192.168.65.0 0.0.0.255 192.168.75.0 0.0.0.255
+access-list 100 deny ip 192.168.75.0 0.0.0.255 192.168.65.0 0.0.0.255
+access-list 100 permit ip any any
+
+end
+write memory

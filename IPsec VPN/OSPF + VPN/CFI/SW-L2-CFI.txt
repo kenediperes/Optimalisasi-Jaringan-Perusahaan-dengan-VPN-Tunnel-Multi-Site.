@@ -1,0 +1,102 @@
+enable
+configure terminal
+hostname SW-L2-CFI
+
+banner motd #
+Designed and Configured by
+411221012 - Kenedi Peres
+#
+
+enable secret nitesane98
+service password-encryption
+username admin secret nitesane98
+ip domain-name cfi.local
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 2
+line console 0
+password nitesane98
+login
+exit
+line vty 0 15
+transport input ssh
+login local
+exit
+
+vlan 65
+name Finance_cfi
+exit
+
+vlan 70
+name Mesin_ctp
+exit
+
+vlan 75
+name Staff_umum
+exit
+
+interface Port-channel1
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+exit
+
+interface range FastEthernet0/1-2
+channel-group 1 mode active
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+no shutdown
+exit
+
+interface Port-channel2
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+exit
+
+interface range FastEthernet0/3-4
+channel-group 2 mode active
+switchport mode trunk
+switchport trunk allowed vlan 65,70,75
+no shutdown
+exit
+
+interface FastEthernet0/5
+switchport mode access
+switchport access vlan 75
+switchport port-security
+switchport port-security maximum 20
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface FastEthernet0/6
+switchport mode access
+switchport access vlan 70
+switchport port-security
+switchport port-security maximum 2
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface FastEthernet0/7
+switchport mode access
+switchport access vlan 75
+switchport port-security
+switchport port-security maximum 1
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface range FastEthernet0/8-24
+shutdown
+exit
+
+interface range GigabitEthernet0/1-2
+shutdown
+exit
+
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1,65,70,75 priority 12288
+
+end
+write memory

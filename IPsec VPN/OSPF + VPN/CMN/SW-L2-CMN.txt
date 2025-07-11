@@ -1,0 +1,133 @@
+enable
+configure terminal
+hostname SW-L2-CMN
+
+banner motd #
+Designed and Configured by
+411221012 - Kenedi Peres
+#
+
+enable secret nitesane98
+service password-encryption
+username admin secret nitesane98
+ip domain-name cmn.local
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 2
+line console 0
+password nitesane98
+login
+exit
+line vty 0 15
+transport input ssh
+login local
+exit
+
+vlan 10
+name Finance
+exit
+vlan 15
+name Prepress
+exit
+vlan 20
+name Estimator
+exit
+vlan 25
+name Spv_IT
+exit
+vlan 30
+name PPIC
+exit
+vlan 35
+name Staff_Umum
+exit
+vlan 100
+name Data_Storage
+exit
+
+interface Port-channel1
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20,25,30,35,100
+exit
+
+interface range FastEthernet0/1-2
+channel-group 1 mode active
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20,25,30,35,100
+no shutdown
+exit
+
+interface Port-channel2
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20,25,30,35,100
+exit
+
+interface range FastEthernet0/3-4
+channel-group 2 mode active
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20,25,30,35,100
+no shutdown
+exit
+
+interface Port-channel3
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20,25,30,35,100
+exit
+
+interface range FastEthernet0/5-6
+channel-group 3 mode active
+switchport mode trunk
+switchport trunk allowed vlan 10,15,20,25,30,35,100
+no shutdown
+exit
+
+interface FastEthernet0/7
+switchport mode access
+switchport access vlan 10
+switchport port-security maximum 4
+switchport port-security
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface FastEthernet0/8
+switchport mode access
+switchport access vlan 35
+switchport port-security maximum 4
+switchport port-security
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface FastEthernet0/9
+switchport mode access
+switchport access vlan 35
+switchport port-security maximum 20
+switchport port-security
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface FastEthernet0/10
+switchport mode access
+switchport access vlan 35
+switchport port-security maximum 1
+switchport port-security
+switchport port-security violation shutdown
+no shutdown
+exit
+
+interface range FastEthernet0/11-24
+shutdown
+exit
+
+interface range GigabitEthernet0/1-2
+shutdown
+exit
+
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1,10,15,20,25,30,35,100 priority 12288
+
+end
+write memory

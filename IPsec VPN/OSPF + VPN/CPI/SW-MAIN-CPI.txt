@@ -1,0 +1,95 @@
+enable
+configure terminal
+hostname SW-MAIN-CPI
+
+banner motd #
+Designed and Configured by
+411221012 - Kenedi Peres
+#
+
+enable secret nitesane98
+service password-encryption
+username admin secret nitesane98
+ip domain-name cpi.local
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 2
+line console 0
+password nitesane98
+login
+exit
+line vty 0 15
+transport input ssh
+login local
+exit
+
+vlan 40
+name Finance_cpi
+exit
+
+vlan 45
+name Deskprint
+exit
+
+vlan 50
+name Cutting_lanyard
+exit
+
+vlan 55
+name Mesin_Digital
+exit
+
+vlan 60
+name Staff_umum
+exit
+
+interface FastEthernet0/1
+switchport mode trunk
+switchport trunk allowed vlan 40,45,50,55,60
+no shutdown
+exit
+
+interface FastEthernet0/2
+switchport mode trunk
+switchport trunk allowed vlan 40,45,50,55,60
+shutdown
+exit
+
+interface Port-channel1
+switchport mode trunk
+switchport trunk allowed vlan 40,45,50,55,60
+exit
+
+interface range FastEthernet0/3-4
+channel-group 1 mode active
+switchport mode trunk
+switchport trunk allowed vlan 40,45,50,55,60
+no shutdown
+exit
+
+interface Port-channel2
+switchport mode trunk
+switchport trunk allowed vlan 40,45,50,55,60
+exit
+
+interface range FastEthernet0/5-6
+channel-group 2 mode active
+switchport mode trunk
+switchport trunk allowed vlan 40,45,50,55,60
+no shutdown
+exit
+
+interface range FastEthernet0/7-24
+shutdown
+exit
+
+interface range GigabitEthernet0/1-2
+shutdown
+exit
+
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1,40,45,50,55,60 priority 4096
+
+end
+write memory
